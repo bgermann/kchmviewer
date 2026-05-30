@@ -403,7 +403,7 @@ bool MainWindow::openPage( const QUrl& url, unsigned int flags )
 
 		case Config::ACTION_ALWAYS_OPEN:
 #if defined (USE_KDE)
-			new KRun ( url, 0 );
+			KQ_OPEN_URL( url, this );
 #else
 			QDesktopServices::openUrl( url );
 #endif
@@ -811,16 +811,12 @@ void MainWindow::actionNavigateHome()
 
 void MainWindow::actionOpenFile()
 {
-#if defined (USE_KDE)
-	QString fn = KFileDialog::getOpenFileName( pConfig->m_lastOpenedDir, i18n("*.chm|Compressed Help Manual;*.epub|EPUB electronic book"), this);
-#else
-	QString fn = QFileDialog::getOpenFileName( this, 
-	                                           i18n( "Open a chm file"), 
+	QString fn = QFileDialog::getOpenFileName( this,
+	                                           i18n( "Open a chm file"),
 											   pConfig->m_lastOpenedDir,
 											   i18n("Electronic books (*.chm *.epub)"),
-	                                           0,
+	                                           nullptr,
 	                                           QFileDialog::DontResolveSymlinks );
-#endif
 
 	if ( !fn.isEmpty() )
 		loadFile( fn );
@@ -858,18 +854,11 @@ void MainWindow::actionExtractCHM()
 {
 	QList< QUrl > files;
 	
-#if defined (USE_KDE)
-	QString outdir = KFileDialog::getExistingDirectory (
-		KUrl(),
-		this,
-		i18n("Choose a directory to store CHM content") );
-#else
 	QString outdir = QFileDialog::getExistingDirectory (
 		this,
 		i18n("Choose a directory to store CHM content"),
 		QString(),
 		QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks );
-#endif
 	
 	if ( outdir.isEmpty() )
 		return;

@@ -28,7 +28,7 @@
 #endif
 
 #if defined (USE_KDE)
-	#include <kaboutdata.h>
+	#include <KAboutData>
 #endif
 
 typedef QApplication  KchmviewerApp;
@@ -42,19 +42,20 @@ int main( int argc, char ** argv )
     ViewWindow::initialize();
 
 #if defined (USE_KDE)
-    KAboutData aboutdata ( "kchmviewer",
-                           QByteArray(),
-                           ki18n("kchmviewer"),
-                           qPrintable( QString("%1.%2") .arg(APP_VERSION_MAJOR) .arg(APP_VERSION_MINOR) ),
-                           ki18n("CHM file viewer"),
-                           KAboutData::License_GPL,
-                           ki18n("(c) 2004-2021 George Yunaev, gyunaev@ulduzsoft.com"),
-                           ki18n("Please report bugs to kchmviewer@ulduzsoft.com"),
-                           "http://www.ulduzsoft.com/kchmviewer",
-                           "kchmviewer@ulduzsoft.com");
+	QApplication app( argc, argv );
+	app.addLibraryPath( "qt-plugins" );
 
-    KCmdLineArgs::init( &aboutdata );
-    KApplication app;
+	KAboutData aboutdata(
+		QStringLiteral("kchmviewer"),
+		i18n("kchmviewer"),
+		QStringLiteral("%1.%2").arg(APP_VERSION_MAJOR).arg(APP_VERSION_MINOR),
+		i18n("CHM file viewer"),
+		KAboutLicense::GPL,
+		i18n("(c) 2004-2021 George Yunaev, gyunaev@ulduzsoft.com"),
+		QString(),
+		QStringLiteral("https://www.ulduzsoft.com/kchmviewer"),
+		QStringLiteral("kchmviewer@ulduzsoft.com"));
+	KAboutData::setApplicationData( aboutdata );
 #else
 	KchmviewerApp app( argc, argv );
 
@@ -81,15 +82,7 @@ int main( int argc, char ** argv )
 #endif
 
 #if defined (USE_KDE)
-    // Because KDE insists of using its KCmdLineArgs class for argument processing, and does not let you just
-    // to use QCoreApplication::arguments(), it forces us to write two different process functions. To avoid this,
-    // we convert command-line options to arguments ourselves here.
-    QStringList arguments;
-
-    for ( int i = 0; i < argc; i++ )
-        arguments << argv[i];
-
-    mainWindow = new MainWindow( arguments );
+    mainWindow = new MainWindow( QCoreApplication::arguments() );
 #else
     mainWindow = new MainWindow( QCoreApplication::arguments() );
 #endif
@@ -98,7 +91,7 @@ int main( int argc, char ** argv )
     if ( mainWindow->hasSameTokenInstance() )
         return 0;
 
-	mainWindow->show();
+    mainWindow->show();
     mainWindow->launch();
 
 	app.connect( &app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()) );

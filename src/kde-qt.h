@@ -24,21 +24,22 @@
 	#define KQ_CLASSNAME(name)			K##name
 	#define KQ_DECLARECLASS(name)		class KQ##name : public K##name
 
-	#include <kapplication.h>
-	#include <kmainwindow.h>
-	#include <kstatusbar.h>
-	#include <kmenubar.h>
-	#include <kcmdlineargs.h>
-	#include <klocale.h>
-	#include <kfiledialog.h>
-	#include <khtml_part.h>
-	#include <ktabwidget.h>
-	#include <kmenu.h>
-	#include <kmessagebox.h>
-	#include <kprogressdialog.h>
-	#include <krun.h>
+	#include <KLocalizedString>
+	#include <KTabWidget>
+	#include <KMessageBox>
+	#include <KProgressDialog>
 
-	#include <QProgressDialog>
+	// KRun was available in KF5, removed in KF6; fall back via KIO::OpenUrlJob
+	#if __has_include(<KRun>)
+		#include <KRun>
+		#define KQ_OPEN_URL(url, parent)	new KRun( (url), (parent) )
+	#elif __has_include(<KIO/OpenUrlJob>)
+		#include <KIO/OpenUrlJob>
+		#define KQ_OPEN_URL(url, parent)	do { auto *_job = new KIO::OpenUrlJob( url ); _job->start(); } while(0)
+	#else
+		#include <QDesktopServices>
+		#define KQ_OPEN_URL(url, parent)	QDesktopServices::openUrl( url )
+	#endif
 
 #else /* !USE_KDE */
 

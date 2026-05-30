@@ -27,7 +27,6 @@ KQProgressModalDialog::KQProgressModalDialog ( const QString & captionText, cons
 	setAutoClose( true );
 	setButtonText( cancelButtonText );
 	progressBar()->setMaximum( totalSteps );
-	setMinimumDuration( 1 );
 }
 #else
 KQProgressModalDialog::KQProgressModalDialog ( const QString & captionText, const QString & labelText, const QString & cancelButtonText, int totalSteps, QWidget * creator )

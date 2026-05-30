@@ -206,13 +206,11 @@ void DialogSetup::accept()
 
 void DialogSetup::browseExternalEditor()
 {
-#if defined (USE_KDE)
-        QString exec = KFileDialog::getOpenFileName( KUrl(), i18n("*|Executables"), this, i18n("Choose an editor executable"));
-#else
 	QString exec = QFileDialog::getOpenFileName(this,
-						i18n("Choose an editor executable"),
-						QString(),
-						i18n( "Executables (*)") );
-#endif
+					i18n("Choose an editor executable"),
+					QString(),
+					i18n( "Executables (*)") );
 
 	if ( !exec.isEmpty() )
+		m_advExternalProgramName->setText( exec );
+}
