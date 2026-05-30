@@ -81,11 +81,7 @@ int main( int argc, char ** argv )
 		qWarning( "Cannot connect to the D-BUS session bus. Going without D-BUS support." );
 #endif
 
-#if defined (USE_KDE)
     mainWindow = new MainWindow( QCoreApplication::arguments() );
-#else
-    mainWindow = new MainWindow( QCoreApplication::arguments() );
-#endif
 
     // If we already have the duplicate instance, the data has been already sent to it - quit now
     if ( mainWindow->hasSameTokenInstance() )

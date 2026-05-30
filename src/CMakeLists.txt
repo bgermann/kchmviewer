@@ -43,5 +43,11 @@ target_link_libraries( kchmviewer
 	Qt6::Xml
 )
 
+if(KF6_FOUND)
+	target_link_libraries( kchmviewer KF6::I18n KF6::WidgetsAddons )
+elseif(KF5_FOUND)
+	target_link_libraries( kchmviewer KF5::I18n KF5::WidgetsAddons )
+endif()
+
 INSTALL( TARGETS kchmviewer DESTINATION bin )
 
