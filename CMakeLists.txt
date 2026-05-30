@@ -1,11 +1,17 @@
+cmake_minimum_required(VERSION 3.16)
+
 # Project name
 PROJECT( kchmviewer )
 
 # Init cmake
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/")
 
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
 # Necessary packages
-FIND_PACKAGE( KDE4 REQUIRED )
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network PrintSupport DBus WebEngineWidgets Xml)
 FIND_PACKAGE( Libchm REQUIRED)
 
 # libzip
@@ -19,11 +25,13 @@ ELSE ()
 ENDIF ()
 
 # Set compilation params
-INCLUDE_DIRECTORIES( ${KDE4_INCLUDES}
+INCLUDE_DIRECTORIES(
 		${CMAKE_SOURCE_DIR}/src
 		${CMAKE_SOURCE_DIR}/lib/libebook )
-ADD_DEFINITIONS( ${KDE4_DEFINITIONS} )
-ADD_DEFINITIONS( -DUSE_KDE )
+
+if(NOT DEFINED LOCALE_INSTALL_DIR)
+	set(LOCALE_INSTALL_DIR share/locale)
+endif()
 
 # Run in those subdirectories
 ADD_SUBDIRECTORY( lib/libebook )

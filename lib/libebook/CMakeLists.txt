@@ -12,5 +12,7 @@ SET( libebookSources
     helperxmlhandler_epubtoc.cpp
  )
 
-KDE4_ADD_LIBRARY( ebook STATIC ${libebookSources} )
+add_library( ebook STATIC ${libebookSources} )
+
+target_link_libraries( ebook Qt6::Core Qt6::Widgets Qt6::Xml )
 

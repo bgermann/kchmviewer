@@ -16,7 +16,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QRegExp>
 #include <QString>
 #include <QPrinter>
 #include <QPrintDialog>
@@ -25,7 +24,11 @@
 #include <QWebEnginePage>
 #include <QWebEngineProfile>
 #include <QWebEngineSettings>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QWebEngineContextMenuData>
+#else
+#include <QWebEngineContextMenuRequest>
+#endif
 
 #include "config.h"
 #include "viewwindow_webengine.h"
@@ -91,6 +94,12 @@ ViewWindow::ViewWindow( QWidget * parent )
     connect(this, &QWebEngineView::urlChanged, [this] (const QUrl &url) {
         ::mainWindow->navigator()->findUrlInContents(url);
     });
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    connect(page(), &QWebEnginePage::linkHovered, [this] (const QString &url) {
+        m_lastContextMenuLinkUrl = QUrl(url);
+    });
+#endif
 }
 
 ViewWindow::~ViewWindow()
@@ -100,7 +109,7 @@ ViewWindow::~ViewWindow()
 
 void ViewWindow::invalidate( )
 {
-    m_newTabLinkKeeper = QString::null;
+    m_newTabLinkKeeper = QString();
     m_storedScrollbarPosition = 0;
     reload();
 }
@@ -202,10 +211,19 @@ bool ViewWindow::printCurrentPage()
         return false;
     }
 
-    page()->print( printer, [printer](bool ok){
-            ::mainWindow->showInStatusBar( ok ? i18n( "Printing finished successfully") : i18n( "Failed to print") );
-            delete printer;
-        });
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    connect(this, &QWebEngineView::printFinished, [this, printer](bool ok) {
+        disconnect(this, &QWebEngineView::printFinished, nullptr, nullptr);
+        ::mainWindow->showInStatusBar( ok ? i18n( "Printing finished successfully") : i18n( "Failed to print") );
+        delete printer;
+    });
+    print( printer );
+#else
+    page()->print( printer, [printer](bool ok) {
+        ::mainWindow->showInStatusBar( ok ? i18n( "Printing finished successfully") : i18n( "Failed to print") );
+        delete printer;
+    });
+#endif
 
     return true;
 }
@@ -280,8 +298,12 @@ void ViewWindow::contextMenuEvent(QContextMenuEvent *e)
 {
     QMenu *m = new QMenu(0);
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QString link = m_lastContextMenuLinkUrl.toString();
+#else
     // See https://stackoverflow.com/questions/48126230/pyqt5-right-click-and-open-in-new-tab
     QString link = page()->contextMenuData().linkUrl().toString();
+#endif
 
     if ( !link.isEmpty() )
     {
@@ -345,7 +367,7 @@ void ViewWindow::onLoadFinished ( bool )
 
 void ViewWindow::applySettings()
 {
-    QWebEngineSettings * setup = QWebEngineSettings::globalSettings();
+    QWebEngineSettings * setup = QWebEngineProfile::defaultProfile()->settings();
 
     setup->setAttribute( QWebEngineSettings::AutoLoadImages, pConfig->m_browserEnableImages );
     setup->setAttribute( QWebEngineSettings::JavascriptEnabled, pConfig->m_browserEnableJS );

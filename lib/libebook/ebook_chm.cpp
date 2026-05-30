@@ -19,6 +19,11 @@
 #include <QFile>
 #include <QVector>
 #include <QDebug>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QStringDecoder>
+#else
+#include <QTextCodec>
+#endif
 
 #include "ebook_chm.h"
 #include "ebook_chm_encoding.h"
@@ -44,13 +49,13 @@ EBook_CHM::EBook_CHM()
 {
 	m_envOptions = getenv("KCHMVIEWEROPTS");
 	m_chmFile = NULL;
-	m_filename = m_font = QString::null;
+	m_filename = m_font = QString();
 
-	m_textCodec = 0;
-	m_textCodecForSpecialFiles = 0;
+	m_textEncoding.clear();
+	m_textEncodingForSpecialFiles.clear();
 	m_detectedLCID = 0;
 	m_currentEncoding = "UTF-8";
-	m_htmlEntityDecoder = 0;
+	m_htmlEntityDecoder = HelperEntityDecoder();
 	m_lookupTablesValid = false;
 }
 
@@ -67,14 +72,14 @@ void EBook_CHM::close()
 	chm_close( m_chmFile );
 
 	m_chmFile = NULL;
-	m_filename = m_font = QString::null;
+	m_filename = m_font = QString();
 
 	m_home.clear();
 	m_topicsFile.clear();
 	m_indexFile.clear();
 
-	m_textCodec = 0;
-	m_textCodecForSpecialFiles = 0;
+	m_textEncoding.clear();
+	m_textEncodingForSpecialFiles.clear();
 	m_detectedLCID = 0;
 	m_currentEncoding = "UTF-8";
 	m_lookupTablesValid = false;
@@ -278,8 +283,8 @@ bool EBook_CHM::load(const QString &archiveName)
 	m_filename = filename;
 
 	// Reset encoding
-	m_textCodec = 0;
-	m_textCodecForSpecialFiles = 0;
+	m_textEncoding.clear();
+	m_textEncodingForSpecialFiles.clear();
 	m_currentEncoding = "UTF-8";
 
 	// Get information from /#WINDOWS and /#SYSTEM files (encoding, title, context file and so)
@@ -334,7 +339,7 @@ int EBook_CHM::findStringInQuotes (const QString& tag, int offset, QString& valu
 	// If we do not need to decode HTML entities, just return.
 	if ( decodeentities )
 	{
-		QString htmlentity = QString::null;
+		QString htmlentity = QString();
 		bool fill_entity = false;
 
 		value.reserve (qend - qbegin); // to avoid multiple memory allocations
@@ -359,7 +364,7 @@ int EBook_CHM::findStringInQuotes (const QString& tag, int offset, QString& valu
 						break;
 
 					value.append ( decode );
-					htmlentity = QString::null;
+					htmlentity = QString();
 					fill_entity = false;
 				}
 				else
@@ -472,7 +477,7 @@ bool EBook_CHM::parseFileAndFillArray( const QString& file, QList< ParsedEntry >
 				data.push_back( entry );
 			}
 
-			entry.name = QString::null;
+			entry.name = QString();
 			entry.urls.clear();
 			entry.iconid = defaultimagenum;
 			entry.seealso.clear();
@@ -787,7 +792,7 @@ QString EBook_CHM::getTopicByUrl( const QUrl& url )
 	QMap< QUrl, QString >::const_iterator it = m_url2topics.find( url );
 
 	if ( it == m_url2topics.end() )
-		return QString::null;
+		return QString();
 
 	return it.value();
 }
@@ -852,36 +857,56 @@ bool EBook_CHM::changeFileEncoding( const QString& qtencoding  )
 		QString global = qtencoding.left( p );
 		QString special = qtencoding.mid( p + 1 );
 
-		m_textCodec = QTextCodec::codecForName( global.toUtf8() );
-
-		if ( !m_textCodec )
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		if ( !QStringDecoder( global.toLatin1().constData() ).isValid() )
+#else
+		if ( !QTextCodec::codecForName( global.toUtf8() ) )
+#endif
 		{
 			qWarning( "Could not set up Text Codec for encoding '%s'", qPrintable( global ) );
 			return false;
 		}
 
-		m_textCodecForSpecialFiles = QTextCodec::codecForName( special.toUtf8() );
-
-		if ( !m_textCodecForSpecialFiles )
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		if ( !QStringDecoder( special.toLatin1().constData() ).isValid() )
+#else
+		if ( !QTextCodec::codecForName( special.toUtf8() ) )
+#endif
 		{
 			qWarning( "Could not set up Text Codec for encoding '%s'", qPrintable( special ) );
 			return false;
 		}
+
+		m_textEncoding = global;
+		m_textEncodingForSpecialFiles = special;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+		m_textCodec = QTextCodec::codecForName( global.toUtf8() );
+		m_textCodecForSpecialFiles = QTextCodec::codecForName( special.toUtf8() );
+#endif
 	}
 	else
 	{
-		m_textCodecForSpecialFiles = m_textCodec = QTextCodec::codecForName( qtencoding.toUtf8() );
-
-		if ( !m_textCodec )
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		if ( !QStringDecoder( qtencoding.toLatin1().constData() ).isValid() )
+#else
+		if ( !QTextCodec::codecForName( qtencoding.toUtf8() ) )
+#endif
 		{
 			qWarning( "Could not set up Text Codec for encoding '%s'", qPrintable( qtencoding ) );
 			return false;
 		}
+
+		m_textEncoding = qtencoding;
+		m_textEncodingForSpecialFiles = qtencoding;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+		m_textCodec = QTextCodec::codecForName( qtencoding.toUtf8() );
+		m_textCodecForSpecialFiles = m_textCodec;
+#endif
 	}
 
 	m_url2topics.clear();
 	fillTopicsUrlMap();
-	m_htmlEntityDecoder.changeEncoding( m_textCodec );
+	m_htmlEntityDecoder.changeEncoding( m_textEncoding );
 	return true;
 }
 

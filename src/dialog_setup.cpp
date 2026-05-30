@@ -77,11 +77,9 @@ DialogSetup::DialogSetup(QWidget *parent)
     m_openAllTOCEntries->setChecked( pConfig->m_tocOpenAllEntries );
     boxUseSingleClick->setChecked( pConfig->m_tabUseSingleClick );
 
-#if defined (USE_WEBENGINE)
     // WebEngine doesn't have those settings
     m_enableOfflineStorage->setEnabled( false );
     m_enableJava->setEnabled( false );
-#endif
 
 	switch ( pConfig->m_toolbarMode )
 	{
@@ -212,11 +210,9 @@ void DialogSetup::browseExternalEditor()
         QString exec = KFileDialog::getOpenFileName( KUrl(), i18n("*|Executables"), this, i18n("Choose an editor executable"));
 #else
 	QString exec = QFileDialog::getOpenFileName(this,
-								i18n("Choose an editor executable"), 
-			   					QString::null, 
-	  							i18n( "Executables (*)") );
+						i18n("Choose an editor executable"),
+						QString(),
+						i18n( "Executables (*)") );
 #endif
 
 	if ( !exec.isEmpty() )
-		m_advExternalProgramName->setText( exec );
-}

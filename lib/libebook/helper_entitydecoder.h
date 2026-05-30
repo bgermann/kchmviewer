@@ -29,10 +29,10 @@ class HelperEntityDecoder
 {
 	public:
 		// Initialization with the specific decoder
-		HelperEntityDecoder( QTextCodec * encoder = 0 );
+		HelperEntityDecoder( const QString& encodingName = QString() );
 
 		// Used when the encoding changes
-		void	changeEncoding( QTextCodec * encoder = 0 );
+		void	changeEncoding( const QString& encodingName = QString() );
 
 		// The decoder function
 		QString decode( const QString& entity ) const;

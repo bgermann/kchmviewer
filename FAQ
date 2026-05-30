@@ -7,7 +7,7 @@ Q: The book body is not shown (empty screen) although table of contents is shown
 
     A: QTextBrowser is very basic browser which cannot handle HTML in some modern books. Kchmviewer tries to fix the books with 
        known quirks, but it does not always work. If the latest release does not work for you, try to use different internal browser
-       by changing it in Settings  using KHTMLPart or WebKit instead.
+       by changing it in Settings using WebEngine instead.
 
 
 Q: The book file contains spaces or non-English characters and it shows without any problem using QTextWidget browser, but when 
@@ -29,12 +29,6 @@ Q: The book shows without any problem using QTextWidget browser, but when I use 
 Q: When I open CHM document, there is no "Contents" or "Index" tab.
 
      A: The files required for Content or Index tabs are not present in chm file. Therefore it is not possible to show those tabs.
-
-
-Q: I use KDE. Which browser is better to use - KHTMLPart or QTextBrowser?
-
-     A: QTextBrowser was reported to be faster, except for multibyte languages (Japanese/Chinese/Korean).
-     However KHTMLPart is obviously more standard-compliant. I use KHTMLPart. 4.0 version adds WebKit as well.
 
 
 Q: Font size increasing button does not increase the font size, just changes the font to bold once.

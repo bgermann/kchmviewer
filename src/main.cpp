@@ -31,11 +31,7 @@
 	#include <kaboutdata.h>
 #endif
 
-#if defined (Q_WS_MAC)
-        #include "kchmviewerapp.h"
-#else
-        typedef QApplication  KchmviewerApp;
-#endif
+typedef QApplication  KchmviewerApp;
 
 MainWindow * mainWindow;
 
@@ -64,16 +60,12 @@ int main( int argc, char ** argv )
 
 	app.addLibraryPath ( "qt-plugins" );
 #endif
-
-	// Set data for QSettings
-	QCoreApplication::setOrganizationName("Ulduzsoft");
-	QCoreApplication::setOrganizationDomain("kchmviewer.net");
 	QCoreApplication::setApplicationName("kchmviewer");
 
 	// Configuration
 	pConfig = new Config();
 
-#if !defined (WIN32) && !defined(Q_WS_MAC)
+#if !defined (WIN32)
 	if ( QDBusConnection::sessionBus().isConnected() )
 	{
 		if ( QDBusConnection::sessionBus().registerService(SERVICE_NAME) )

@@ -44,15 +44,9 @@ for target in qt5-32 qt5-64 qt4-64; do
 
 	# Get the Qt version
 	case $target in
-		qt4-*)
-			QMAKE=qmake
-			QTLIBS="QtDBus QtXml QtGui QtCore QtNetwork QtWebKit"
-			RPMSUFFIX="qt4"
-			;;
-
 		qt5-*)
 			QMAKE=qmake-qt5
-			QTLIBS="Qt5WebKitWidgets Qt5PrintSupport Qt5WebKit Qt5Widgets Qt5Xml Qt5DBus Qt5Network Qt5Gui Qt5Core GL"
+			QTLIBS="Qt5WebEngineWidgets Qt5PrintSupport Qt5WebEngine Qt5Widgets Qt5Xml Qt5DBus Qt5Network Qt5Gui Qt5Core GL"
 			RPMSUFFIX="qt5"
 			;;
 

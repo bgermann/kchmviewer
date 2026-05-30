@@ -129,15 +129,15 @@ bool Settings::loadSettings( const QString & filename )
 
 	QFileInfo finfo ( filename );
 
-	m_settingsFile = QString::null;
-	m_searchIndex = QString::null;
+	m_settingsFile = QString();
+	m_searchIndex = QString();
 	
 	if ( !finfo.size() )
 		return false;
 	
 	// Init those params, as they'll be used during save the first time even if the file is not here
 	m_currentfilesize = finfo.size();
-	m_currentfiledate = finfo.lastModified().toTime_t();
+	m_currentfiledate = finfo.lastModified().toSecsSinceEpoch();
 	m_settingsFile = pConfig->getEbookSettingFile( filename );
 	m_searchIndex = pConfig->getEbookIndexFile( filename );
 	
@@ -189,9 +189,9 @@ bool Settings::loadSettings( const QString & filename )
 			
 		case MARKER_FILETIME:
 			stream >> m_currentfiledate;
-			if ( m_currentfiledate != finfo.lastModified().toTime_t() )
+			if ( m_currentfiledate != finfo.lastModified().toSecsSinceEpoch() )
 			{
-				m_currentfiledate = finfo.lastModified().toTime_t();
+				m_currentfiledate = finfo.lastModified().toSecsSinceEpoch();
 				return false;
 			}
 			break;

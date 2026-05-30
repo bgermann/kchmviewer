@@ -19,13 +19,13 @@
 #ifndef HELPERXMLHANDLER_EPUBCONTAINER_H
 #define HELPERXMLHANDLER_EPUBCONTAINER_H
 
-#include <QtXml/QXmlDefaultHandler>
+#include <QByteArray>
+#include <QString>
 
-class HelperXmlHandler_EpubContainer : public QXmlDefaultHandler
+class HelperXmlHandler_EpubContainer
 {
 	public:
-		// Overridden members
-		bool startElement ( const QString & namespaceURI, const QString & localName, const QString & qName, const QXmlAttributes & atts );
+		bool parse( const QByteArray& data );
 
 		// The content path
 		QString	contentPath;

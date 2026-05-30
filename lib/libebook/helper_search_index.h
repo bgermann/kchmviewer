@@ -24,6 +24,7 @@
 #include <QVector>
 #include <QDataStream>
 #include <QStringList>
+#include <QObject>
 
 #include "helper_entitydecoder.h"
 

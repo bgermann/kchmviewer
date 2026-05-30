@@ -17,7 +17,7 @@
  */
 
 #include <QApplication>
-#include <QTextCodec>
+#include <algorithm>
 
 #include "ebook.h"
 #include "ebook_search.h"
@@ -82,7 +82,7 @@ bool Index::makeIndex(const QList< QUrl >& docs, EBook *chmFile )
 	docList = docs;
 
 	if ( chmFile->hasFeature( EBook::FEATURE_ENCODING ) )
-		entityDecoder.changeEncoding( QTextCodec::codecForName( chmFile->currentEncoding().toUtf8() ) );
+		entityDecoder.changeEncoding( chmFile->currentEncoding() );
 	
 	QList< QUrl >::ConstIterator it = docList.begin();
 	int steps = docList.count() / 100;
@@ -260,7 +260,7 @@ bool Index::parseDocumentToStringlist(EBook *chmFile, const QUrl& filename, QStr
 		if ( ch == '&' )
 		{
 			state = STATE_IN_HTML_ENTITY;
-			parseentity = QString::null;
+			parseentity = QString();
 			continue;
 		}
 		
@@ -283,7 +283,7 @@ bool Index::parseDocumentToStringlist(EBook *chmFile, const QUrl& filename, QStr
 				tokenlist.push_back( parsedbuf.toLower() );
 			
 			tokenlist.push_back( ch.toLower() );
-			parsedbuf = QString::null;
+			parsedbuf = QString();
 			continue;
 		}
 		
@@ -292,7 +292,7 @@ tokenize_buf:
 		if ( !parsedbuf.isEmpty() )
 		{
 			tokenlist.push_back( parsedbuf.toLower() );
-			parsedbuf = QString::null;
+			parsedbuf = QString();
 		}
 	}
 	
@@ -380,7 +380,7 @@ QList< QUrl > Index::query(const QStringList &terms, const QStringList &termSeq,
 	if ( !termList.count() )
 		return QList< QUrl >();
 	
-	qSort( termList );
+	std::sort( termList.begin(), termList.end() );
 
 	QVector<Document> minDocs = termList.takeFirst().documents;
 	for(QList<Term>::Iterator it = termList.begin(); it != termList.end(); ++it) {
@@ -403,7 +403,7 @@ QList< QUrl > Index::query(const QStringList &terms, const QStringList &termSeq,
 	}
 
 	QList< QUrl > results;
-	qSort( minDocs );
+	std::sort( minDocs.begin(), minDocs.end() );
 	if ( termSeq.isEmpty() ) {
 		for(QVector<Document>::Iterator it = minDocs.begin(); it != minDocs.end(); ++it)
 			results << docList.at((int)(*it).docNumber);

@@ -19,21 +19,18 @@
 #ifndef HELPERXMLHANDLER_EPUBTOC_H
 #define HELPERXMLHANDLER_EPUBTOC_H
 
-#include <QtXml/QXmlDefaultHandler>
+#include <QByteArray>
 #include "ebook_epub.h"
 
-class HelperXmlHandler_EpubTOC : public QXmlDefaultHandler
+class HelperXmlHandler_EpubTOC
 {
 	public:
 		HelperXmlHandler_EpubTOC( EBook_EPUB * epub );
+		bool parse( const QByteArray& data );
 
 		QList< EBookTocEntry >	entries;
 
 	private:
-		// Overridden members
-		bool startElement ( const QString & namespaceURI, const QString & localName, const QString & qName, const QXmlAttributes & atts );
-		bool characters(const QString &ch);
-		bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName);
 		void checkNewTocEntry();
 
 		bool			m_inNavMap;

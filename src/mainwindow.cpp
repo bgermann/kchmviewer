@@ -37,11 +37,6 @@
 #include "textencodings.h"
 #include "ui_dialog_about.h"
 
-#ifdef Q_WS_X11
-    #include <QX11Info>
-    #include <X11/Xlib.h>
-#endif
-
 // Maximum memory size for inter-application communication
 static const int SHARED_MEMORY_SIZE = 4096;
 
@@ -401,9 +396,7 @@ bool MainWindow::openPage( const QUrl& url, unsigned int flags )
 		case Config::ACTION_ASK_USER:
 	   		if ( QMessageBox::question(this,
 				 i18n("%1 - remote link clicked - %2") . arg(QCoreApplication::applicationName()) . arg(otherlink),
-				 i18n("A remote link %1 will start the external program to open it.\n\nDo you want to continue?").arg( url.toString() ),
-				 i18n("&Yes"), i18n("&No"),
-				 QString::null, 0, 1 ) )
+				 i18n("A remote link %1 will start the external program to open it.\n\nDo you want to continue?").arg( url.toString() ) ) == QMessageBox::No )
 					return false;
 				
 			// no break! should continue to open.
@@ -666,25 +659,6 @@ bool MainWindow::parseCmdLineArgs(const QStringList& args , bool from_another_ap
             showMinimized();
         else if ( from_another_app )
         {
-#ifdef Q_WS_X11
-            // On Linux - at least on KDE - activating the foreground window
-            // via activateWindow(); raise(); only works twice. Then it does not
-            // work anymore, most likely because of some internal counter in Qt.
-            // The code below, however, works fine.
-            Display * display = x11Info().display();
-            WId win = winId();
-
-            XEvent event = { 0 };
-            event.xclient.type = ClientMessage;
-            event.xclient.serial = 0;
-            event.xclient.send_event = True;
-            event.xclient.message_type = XInternAtom( display, "_NET_ACTIVE_WINDOW", False);
-            event.xclient.window = win;
-            event.xclient.format = 32;
-
-            XSendEvent( display, DefaultRootWindow(display), False, SubstructureRedirectMask | SubstructureNotifyMask, &event );
-            XMapRaised( display, win );
-#else
             // On Windows it is not possible to activate the window of a non-active process. From MSDN:
             // https://msdn.microsoft.com/en-us/library/windows/desktop/ms633539%28v=vs.85%29.aspx
             //
@@ -693,7 +667,6 @@ bool MainWindow::parseCmdLineArgs(const QStringList& args , bool from_another_ap
             activateWindow();
             raise();
             show();
-#endif
         }
 
 		return true;
@@ -894,7 +867,7 @@ void MainWindow::actionExtractCHM()
 	QString outdir = QFileDialog::getExistingDirectory (
 		this,
 		i18n("Choose a directory to store CHM content"),
-		QString::null,
+		QString(),
 		QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks );
 #endif
 	
@@ -1084,15 +1057,11 @@ void MainWindow::actionLocateInContentsTab()
 
 void MainWindow::actionAboutApp()
 {
-#if QT_VERSION >= 0x050000
     QString info = QString( "<br>Built for %1 arch using %2 ABI<br>Running on %3, Qt version %4" )
             .arg( QSysInfo::buildCpuArchitecture() )
             .arg( QSysInfo::buildAbi() )
             .arg( QSysInfo::prettyProductName() )
             .arg( qVersion() );
-#else
-    QString info = QString( "<br>Using Qt version %1") .arg( qVersion() );
-#endif
 
     QString abouttext = i18n( "<html><b>kchmviewer version %1.%2</b>%3<br><br>"
                               "Copyright (C) George Yunaev, 2004-2015<br>"
@@ -1101,7 +1070,6 @@ void MainWindow::actionAboutApp()
 							  "Licensed under GNU GPL license version 3.</html>" )
                                 .arg(APP_VERSION_MAJOR) .arg(APP_VERSION_MINOR) .arg( info );
 
-	// It is quite funny that the argument order differs
 #if defined (USE_KDE)
 	KMessageBox::about( this, abouttext, i18n("About kchmviewer") );
 #else
@@ -1350,7 +1318,7 @@ void MainWindow::setupLangEncodingMenu()
 		
 		QString text = i18n("%1 ( %2 )") .arg( languages[idx] ) .arg( qencodings[idx] );
 		action->setText( text );
-		action->setData( qVariantFromValue( qencodings[idx] ) );
+		action->setData( QVariant::fromValue( qencodings[idx] ) );
 		action->setCheckable( true );
 		
 		// Add to the action group, so only one is checkable

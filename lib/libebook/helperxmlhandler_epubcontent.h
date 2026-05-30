@@ -19,14 +19,16 @@
 #ifndef HELPERXMLHANDLER_EPUBCONTENT_H
 #define HELPERXMLHANDLER_EPUBCONTENT_H
 
+#include <QByteArray>
 #include <QMap>
 #include <QString>
-#include <QtXml/QXmlDefaultHandler>
+#include <QList>
 
-class HelperXmlHandler_EpubContent : public QXmlDefaultHandler
+class HelperXmlHandler_EpubContent
 {
 	public:
 		HelperXmlHandler_EpubContent();
+		bool parse( const QByteArray& data );
 
 		// Keep the tag-associated metadata
 		QMap< QString, QString >	metadata;
@@ -49,11 +51,6 @@ class HelperXmlHandler_EpubContent : public QXmlDefaultHandler
 			STATE_IN_SPINE
 		};
 
-		bool startElement ( const QString & namespaceURI, const QString & localName, const QString & qName, const QXmlAttributes & atts );
-		bool characters(const QString &ch);
-		bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName);
-
-		// Tracking
 		State		m_state;
 		QString		m_tagname;
 };

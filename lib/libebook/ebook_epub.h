@@ -19,6 +19,7 @@
 #ifndef EBOOK_EPUB_H
 #define EBOOK_EPUB_H
 
+#include <QMap>
 #include <QString>
 #include <QStringList>
 #include <QFile>
@@ -26,8 +27,6 @@
 
 #include "ebook.h"
 #include "zip.h"
-
-class QXmlDefaultHandler;
 
 
 class EBook_EPUB : public EBook
@@ -177,8 +176,8 @@ class EBook_EPUB : public EBook
         static const char * urlScheme();
 
 	private:
-		// Parses the XML file using a specified parser
-		bool	parseXML( const QString& uri, QXmlDefaultHandler * reader );
+		// Loads a raw XML file from the epub archive into data
+		bool	loadXML( const QString& uri, QByteArray& data );
 
 		// Parses the book description file. Fills up the ebook info
 		bool	parseBookinfo();

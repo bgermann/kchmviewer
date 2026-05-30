@@ -20,6 +20,9 @@
 #include "mainwindow.h"
 #include "viewwindow.h"
 #include "viewwindowmgr.h"
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QWebEngineFindTextResult>
+#endif
 
 
 // A small overriden class to handle a middle click
@@ -31,7 +34,7 @@ class ViewWindowTabWidget : public QTabWidget
 	protected:
 		void mouseReleaseEvent ( QMouseEvent * event )
 		{
-			if ( event->button() == Qt::MidButton)
+			if ( event->button() == Qt::MiddleButton)
 			{
 				int tab = tabBar()->tabAt( event->pos() );
 
@@ -142,14 +145,6 @@ ViewWindow * ViewWindowMgr::addNewTab( bool set_active )
 	if ( set_active || m_Windows.size() == 1 )
 		m_tabWidget->setCurrentWidget( tabdata.widget );
 	
-#if defined (USE_WEBKIT)
-	// Handle clicking on link in browser window
-	connect( viewvnd,
-			 SIGNAL( linkClicked ( const QUrl& ) ),
-	         ::mainWindow, 
-			 SLOT( activateUrl( const QUrl& ) ) );
-#endif
-
     connect( viewvnd, SIGNAL(dataLoaded(ViewWindow*)), this, SLOT(onWindowContentChanged(ViewWindow*)));
 
 	// Set up the accelerator if we have room
@@ -349,8 +344,7 @@ void ViewWindowMgr::onActivateFind()
 
 void ViewWindowMgr::find( bool backward )
 {
-#if defined (USE_WEBENGINE)
-    QWebEnginePage::FindFlags flags = 0;
+    QWebEnginePage::FindFlags flags = QWebEnginePage::FindFlags();
 
     if ( checkCase->isChecked() )
         flags |= QWebEnginePage::FindCaseSensitively;
@@ -361,7 +355,13 @@ void ViewWindowMgr::find( bool backward )
     // Pre-hide the wrapper
     labelWrapped->hide();
 
-    current()->findText( editFind->text(), flags, [this](bool found) {
+    current()->findText( editFind->text(), flags,
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        [this](const QWebEngineFindTextResult& result) {
+        bool found = result.numberOfMatches() > 0;
+#else
+        [this](bool found) {
+#endif
         // If we didn't find anything, enable the wrap and try again
         if ( !frameFind->isVisible() )
             frameFind->show();
@@ -375,64 +375,6 @@ void ViewWindowMgr::find( bool backward )
 
         editFind->setPalette( p );
     });
-
-#else
-    QWebPage::FindFlags webkitflags = 0;
-	
-	if ( checkCase->isChecked() )
-        webkitflags |= QWebPage::FindCaseSensitively;
-	
-	if ( backward )
-        webkitflags |= QWebPage::FindBackward;
-
-    if ( pConfig->m_browserHighlightSearchResults )
-    {
-        // From the doc:
-        // If the HighlightAllOccurrences flag is passed, the
-        // function will highlight all occurrences that exist
-        // in the page. All subsequent calls will extend the
-        // highlight, rather than replace it, with occurrences
-        // of the new string.
-
-        // If the search text is different, we run the empty string search
-        // to discard old highlighting
-        if ( m_lastSearchedWord != editFind->text() )
-            current()->findText( "", webkitflags | QWebPage::HighlightAllOccurrences );
-
-        m_lastSearchedWord = editFind->text();
-
-        // Now we call search with highlighting enabled, while the main search below will have
-        // it disabled. This leads in both having the highlighting results AND working forward/
-        // backward buttons.
-        current()->findText( editFind->text(), webkitflags | QWebPage::HighlightAllOccurrences );
-    }
-
-    // Pre-hide the wrapper
-    labelWrapped->hide();
-
-    bool found = current()->findText( editFind->text(), webkitflags );
-
-    // If we didn't find anything, enable the wrap and try again
-    if ( !found )
-    {
-        found = current()->findText( editFind->text(), webkitflags | QWebPage::FindWrapsAroundDocument );
-
-        if ( found )
-            labelWrapped->show();
-    }
-
-	if ( !frameFind->isVisible() )
-		frameFind->show();
-
-	QPalette p = editFind->palette();
-
-    if ( !found )
-		p.setColor( QPalette::Active, QPalette::Base, QColor(255, 102, 102) );
-	else
-		p.setColor( QPalette::Active, QPalette::Base, Qt::white );
-
-	editFind->setPalette( p );
-#endif
 }
 
 

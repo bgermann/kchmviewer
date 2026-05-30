@@ -16,19 +16,25 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QXmlStreamReader>
 #include "helperxmlhandler_epubcontainer.h"
 
-bool HelperXmlHandler_EpubContainer::startElement(const QString &, const QString &, const QString &qName, const QXmlAttributes &atts)
+bool HelperXmlHandler_EpubContainer::parse( const QByteArray& data )
 {
-	if ( qName == "rootfile" )
+	QXmlStreamReader xml( data );
+
+	while ( !xml.atEnd() )
 	{
-		int idx = atts.index( "full-path" );
-
-		if ( idx == -1 )
-			return false;
-
-		contentPath = atts.value( idx );
+		if ( xml.readNext() == QXmlStreamReader::StartElement )
+		{
+			if ( xml.name() == QLatin1String("rootfile") )
+			{
+				contentPath = xml.attributes().value( "full-path" ).toString();
+				if ( contentPath.isEmpty() )
+					return false;
+			}
+		}
 	}
 
-	return true;
+	return !xml.hasError();
 }

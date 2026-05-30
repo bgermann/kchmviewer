@@ -78,7 +78,6 @@
 #include <QFile>
 #include <QTemporaryFile>
 #include <QDir>
-#include <QRegExp>
 #include <QTimer>
 #include <QMap>
 #include <QUrl>

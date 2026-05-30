@@ -23,7 +23,6 @@
 #endif
 
 #include <QMessageBox>
-#include <QtXml/QXmlSimpleReader>
 
 #include "ebook_epub.h"
 #include "helperxmlhandler_epubcontainer.h"
@@ -174,41 +173,32 @@ bool EBook_EPUB::isSupportedUrl(const QUrl &url)
 	return url.scheme() == URL_SCHEME_EPUB;
 }
 
-bool EBook_EPUB::parseXML(const QString &uri, QXmlDefaultHandler * parser)
+bool EBook_EPUB::loadXML(const QString &uri, QByteArray &data)
 {
-	QByteArray container;
-
-	if ( !getFileAsBinary( container, uri ) )
+	if ( !getFileAsBinary( data, uri ) )
 	{
 		qDebug("Failed to retrieve XML file %s", qPrintable( uri ) );
 		return false;
 	}
-
-	// Use it as XML source
-	QXmlInputSource source;
-	source.setData( container );
-
-	// Init the reader
-	QXmlSimpleReader reader;
-	reader.setContentHandler( parser );
-	reader.setErrorHandler( parser );
-
-	return reader.parse( source );
+	return true;
 }
 
 bool EBook_EPUB::parseBookinfo()
 {
     // Parse the container.xml to find the content descriptor
+    QByteArray xmldata;
     HelperXmlHandler_EpubContainer container_parser;
 
-    if ( !parseXML( "META-INF/container.xml", &container_parser )
+    if ( !loadXML( "META-INF/container.xml", xmldata )
+         || !container_parser.parse( xmldata )
          || container_parser.contentPath.isEmpty() )
         return false;
 
     // Parse the content.opf
     HelperXmlHandler_EpubContent content_parser;
 
-    if ( !parseXML( container_parser.contentPath, &content_parser ) )
+    if ( !loadXML( container_parser.contentPath, xmldata )
+         || !content_parser.parse( xmldata ) )
         return false;
 
     // At least title and the TOC must be present
@@ -225,7 +215,8 @@ bool EBook_EPUB::parseBookinfo()
     // Parse the TOC
     HelperXmlHandler_EpubTOC toc_parser( this );
 
-    if ( !parseXML( content_parser.tocname, &toc_parser ) )
+    if ( !loadXML( content_parser.tocname, xmldata )
+         || !toc_parser.parse( xmldata ) )
         return false;
 
     // Get the data

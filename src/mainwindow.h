@@ -20,6 +20,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QActionGroup>
 #include <QSharedMemory>
 #include "kde-qt.h"
 #include "ebook.h"

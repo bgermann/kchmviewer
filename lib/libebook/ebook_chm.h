@@ -20,7 +20,11 @@
 #define EBOOK_CHM_H
 
 #include <QMap>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QStringDecoder>
+#else
 #include <QTextCodec>
+#endif
 
 // Enable Unicode use in libchm
 #if defined (WIN32)
@@ -214,27 +218,51 @@ class EBook_CHM : public EBook
 		//! Encode the string with the currently selected text codec, if possible. Or return as-is, if not.
 		inline QString encodeWithCurrentCodec( const QByteArray& str) const
 		{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+			if ( m_textEncoding.isEmpty() ) return QString::fromLatin1( str );
+			QStringDecoder dec( m_textEncoding.toLatin1().constData() );
+			return dec.isValid() ? dec( str ) : QString::fromLatin1( str );
+#else
 			return (m_textCodec ? m_textCodec->toUnicode( str.constData () ) : str);
+#endif
 		}
 
 		//! Encode the string with the currently selected text codec, if possible. Or return as-is, if not.
 		inline QString encodeWithCurrentCodec (const char * str) const
 		{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+			if ( m_textEncoding.isEmpty() ) return QString::fromLatin1( str );
+			QStringDecoder dec( m_textEncoding.toLatin1().constData() );
+			return dec.isValid() ? dec( QByteArray(str) ) : QString::fromLatin1( str );
+#else
 			return (m_textCodec ? m_textCodec->toUnicode( str ) : (QString) str);
+#endif
 		}
 
 		//! Encode the string from internal files with the currently selected text codec, if possible.
 		//! Or return as-is, if not.
 		inline QString encodeInternalWithCurrentCodec (const QString& str) const
 		{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+			if ( m_textEncodingForSpecialFiles.isEmpty() ) return str;
+			QStringDecoder dec( m_textEncodingForSpecialFiles.toLatin1().constData() );
+			return dec.isValid() ? dec( str.toUtf8() ) : str;
+#else
 			return (m_textCodecForSpecialFiles ? m_textCodecForSpecialFiles->toUnicode( qPrintable(str) ) : str);
+#endif
 		}
 
 		//! Encode the string from internal files with the currently selected text codec, if possible.
 		//! Or return as-is, if not.
 		inline QString encodeInternalWithCurrentCodec (const char * str) const
 		{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+			if ( m_textEncodingForSpecialFiles.isEmpty() ) return QString::fromLatin1( str );
+			QStringDecoder dec( m_textEncodingForSpecialFiles.toLatin1().constData() );
+			return dec.isValid() ? dec( QByteArray(str) ) : QString::fromLatin1( str );
+#else
 			return (m_textCodecForSpecialFiles ? m_textCodecForSpecialFiles->toUnicode (str) : (QString) str);
+#endif
 		}
 
 		//! Helper. Translates from Win32 encodings to generic wxWidgets ones.
@@ -305,9 +333,13 @@ class EBook_CHM : public EBook
 		//! font charset from CHM file, used in encoding detection
 		QString 		m_font;
 
-		//! Chosen text codec
+		//! Chosen text encoding name
+		QString				m_textEncoding;
+		QString				m_textEncodingForSpecialFiles;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		QTextCodec	*	m_textCodec;
 		QTextCodec	*	m_textCodecForSpecialFiles;
+#endif
 
 		//! Current encoding
 		QString			m_currentEncoding;

@@ -15,45 +15,33 @@ SET( kchmviewerSources
 	tab_contents.cpp
 	tab_index.cpp
 	tab_search.cpp
-	viewwindow.cpp
 	viewwindowmgr.cpp
 	navigationpanel.cpp
 	checknewversion.cpp
 	toolbarmanager.cpp
 	toolbareditor.cpp
-	qwebviewnetwork.cpp
 	textencodings.cpp
 	treeitem_toc.cpp
 	treeitem_index.cpp
+	viewwindow_webengine.cpp
+	dataprovider_qwebengine.cpp
+	resources/images.qrc
   )
 
-# UI files
-KDE4_ADD_UI_FILES( kchmviewerSources 
-	dialog_about.ui
-	dialog_setup.ui
-	dialog_topicselector.ui
-	mainwindow.ui
-	navigatorpanel.ui
-	tab_bookmarks.ui
-	tab_contents.ui
-	tab_index.ui
-	tab_search.ui
-	toolbareditor.ui
-	window_browser.ui
-   )
+add_executable( kchmviewer ${kchmviewerSources} )
 
-# Resources
-QT4_ADD_RESOURCES( kchmviewerResources resources/images.qrc )
-
-KDE4_ADD_EXECUTABLE( kchmviewer ${kchmviewerSources} ${kchmviewerResources} )
-
-TARGET_LINK_LIBRARIES( kchmviewer 
+target_link_libraries( kchmviewer
 	ebook
 	${LIBCHM_LIBRARY}
 	${LIBZIP_LIBRARY}
-	${KDE4_KDEUI_LIBS} 
-	${QT_QTWEBKIT_LIBRARY}	
-	${KDE4_KFILE_LIBS}  )
+	Qt6::Core
+	Qt6::Widgets
+	Qt6::Network
+	Qt6::PrintSupport
+	Qt6::DBus
+	Qt6::WebEngineWidgets
+	Qt6::Xml
+)
 
-INSTALL( TARGETS kchmviewer DESTINATION ${KDE4_BIN_INSTALL_DIR} )
+INSTALL( TARGETS kchmviewer DESTINATION bin )
 

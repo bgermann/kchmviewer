@@ -107,26 +107,6 @@ unix:!macx: {
 }
 LIBS += -lchm -lzip
 
-greaterThan(QT_MAJOR_VERSION, 4) {
-    # Qt 5
-    greaterThan(QT_MINOR_VERSION, 5) {
-        # Qt 5.6+
-#        error("You use Qt5.6+ - QWebEngine is not yet suitable for kchmviewer and is not supported")
-        QT += webengine webenginewidgets
-        DEFINES += USE_WEBENGINE
-        SOURCES += viewwindow_webengine.cpp dataprovider_qwebengine.cpp
-        HEADERS += dataprovider_qwebengine.h viewwindow_webengine.h
-    } else {
-        # Qt 5.0-5.5
-        QT += webkit webkitwidgets
-        DEFINES += USE_WEBKIT
-        SOURCES += viewwindow_webkit.cpp dataprovider_qwebkit.cpp
-        HEADERS += dataprovider_qwebkit.h viewwindow_webkit.h
-    }
-} else {
-    message("Qt4 is not supported anymore, please do not report any errors")
-    QT += webkit webkitwidgets
-    DEFINES += USE_WEBKIT
-    SOURCES += viewwindow_webkit.cpp dataprovider_qwebkit.cpp
-    HEADERS += dataprovider_qwebkit.h viewwindow_webkit.h
-}
+QT += webenginewidgets
+SOURCES += viewwindow_webengine.cpp dataprovider_qwebengine.cpp
+HEADERS += dataprovider_qwebengine.h viewwindow_webengine.h

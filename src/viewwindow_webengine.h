@@ -130,6 +130,11 @@ class ViewWindow : public QWebEngineView
         // It is set to -1 if no scrollbar position has been set and the page is not loaded yet
         // It is set to 0 if no scrollbar position has been set and the page is loaded already
         int						m_storedScrollbarPosition;
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        // Link URL captured from the last contextMenuRequested signal
+        QUrl                    m_lastContextMenuLinkUrl;
+#endif
 };
 
 #endif // VIEWWINDOW_WEBENGINE_H

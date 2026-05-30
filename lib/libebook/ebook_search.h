@@ -20,6 +20,7 @@
 #define EBookSearch_H
 
 #include <QDataStream>
+#include <QObject>
 #include "helper_search_index.h"
 
 class EBook;

@@ -44,16 +44,9 @@ To compile Qt-only version of kchmviewer, follow the procedure:
   
 The compiled binary is in bin/kchmviewer. You could copy it somewhere, or use it as-is. It does not require installation.
 
-If QtWebKit module is not found, you will get the following error:
+3.2 KDE version
 
-> kchmviewwindow_qtwebkit.h:25:21: error: QWebView: No such file or directory
-
-then you need to install the QtWebKit module.
-
-  
-3.2 KDE4 version
-
-To compile the version of kchmviewer with KDE4 support, follow the procedure:
+To compile the version of kchmviewer with KDE support, follow the procedure:
 
 > tar zxf kchmviewer-<version>.tar.gz
 > mkdir build
